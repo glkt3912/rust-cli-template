@@ -10,7 +10,8 @@ Rust CLI / ライブラリプロジェクトのテンプレート。モジュー
 - **バリデーション分離**: `Args::validate()` で clap では表現できない制約を検証
 - **LazyLock 正規表現**: `std::sync::LazyLock` による一度きりの正規表現コンパイル
 - **統合テスト**: `assert_cmd` + `predicates` による CLI 動作の自動検証
-- **CI 対応**: GitHub Actions で 3OS (macOS, Ubuntu, Windows) × fmt / clippy / test
+- **CI 対応**: GitHub Actions で 3OS (macOS, Ubuntu, Windows) × fmt / clippy / test。PR 時の自動フォーマットコミットも含む
+- **リリース自動化**: `v*` タグ push でマルチプラットフォームバイナリを GitHub Releases に自動公開
 - **リリース最適化**: LTO, strip, codegen-units=1 による小サイズバイナリ
 
 ## プロジェクト構成
@@ -27,7 +28,9 @@ src/
 tests/
 └── cli_integration.rs   assert_cmd 統合テスト (5件)
 .github/workflows/
-└── ci.yml               GitHub Actions CI パイプライン
+├── ci.yml               GitHub Actions CI パイプライン (3OS × fmt/clippy/test)
+├── fmt.yml              PR 時の自動フォーマット + コミット
+└── release.yml          タグ push による自動リリース (Linux/macOS/Windows)
 ```
 
 ## インストール
@@ -92,11 +95,13 @@ cargo build --release
 | パターン | 出典プロジェクト |
 |---|---|
 | リリースプロファイル最適化 | rpg (パスワード生成CLI) |
-| `assert_cmd` 統合テスト | rpg |
+| `assert_cmd` 統合テスト (`env!` マクロ) | crabplay (音楽プレーヤーCLI) |
 | `OutputFormatter` トレイト | gymeat (食事プランCLI) |
 | `validate()` バリデーション分離 | gymeat |
 | マルチOS CI パイプライン | gymeat |
 | `LazyLock<Regex>` パターン | youtube-audio-downloader |
+| PR 自動フォーマット (`fmt.yml`) | crabplay |
+| タグ push 自動リリース (`release.yml`) | crabplay |
 
 ## 拡張ガイド
 

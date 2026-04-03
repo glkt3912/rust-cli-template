@@ -1,11 +1,8 @@
-#[allow(deprecated)]
-use assert_cmd::cargo::cargo_bin;
+use assert_cmd::Command;
 use predicates::prelude::*;
 
-fn cmd() -> assert_cmd::Command {
-    #[allow(deprecated)]
-    let bin = cargo_bin("rust-cli-template");
-    assert_cmd::Command::from(std::process::Command::new(bin))
+fn cmd() -> Command {
+    Command::new(env!("CARGO_BIN_EXE_rust-cli-template"))
 }
 
 #[test]
@@ -41,7 +38,10 @@ fn test_version_flag() {
         .arg("--version")
         .assert()
         .success()
-        .stdout(predicate::str::contains("rust-cli-template 0.1.0"));
+        .stdout(predicate::str::contains(format!(
+            "rust-cli-template {}",
+            env!("CARGO_PKG_VERSION")
+        )));
 }
 
 #[test]
