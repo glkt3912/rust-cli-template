@@ -5,6 +5,8 @@ fn cmd() -> Command {
     Command::new(env!("CARGO_BIN_EXE_rust-cli-template"))
 }
 
+// --- 後方互換: サブコマンドなし = parse 動作 ---
+
 #[test]
 fn test_default_run_succeeds() {
     cmd()
@@ -51,4 +53,53 @@ fn test_invalid_input_file() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("error"));
+}
+
+// --- parse サブコマンド ---
+
+#[test]
+fn test_parse_subcommand_default_output() {
+    cmd()
+        .arg("parse")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("IntLiteral"));
+}
+
+#[test]
+fn test_parse_subcommand_json_format() {
+    cmd()
+        .args(&["--format", "json", "parse"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\"kind\""));
+}
+
+// --- check サブコマンド ---
+
+#[test]
+fn test_check_subcommand_valid_input() {
+    cmd()
+        .arg("check")
+        .assert()
+        .success()
+        .stdout(predicate::str::is_empty());
+}
+
+#[test]
+fn test_check_subcommand_invalid_file() {
+    cmd()
+        .args(&["--input", "nonexistent_file.txt", "check"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("error"));
+}
+
+#[test]
+fn test_check_subcommand_has_help() {
+    cmd()
+        .args(&["check", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("check"));
 }
