@@ -2,29 +2,26 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
 
-use rust_cli_template::cli::Args;
+use rust_cli_template::cli::{Args, SubCommand};
 use rust_cli_template::output::{JsonFormatter, OutputFormatter, TextFormatter};
 use rust_cli_template::parse_input;
 
-fn run(args: &Args) -> Result<()> {
-    args.validate().context("argument validation failed")?;
-
-    let input = match &args.input {
+fn load_input(input: &Option<String>) -> Result<String> {
+    match input {
         Some(path) => std::fs::read_to_string(path)
-            .with_context(|| format!("failed to read file: {}", path))?,
-        None => {
-            // デモ用: 引数なしの場合はサンプル入力を使用
-            "42".to_string()
-        }
-    };
+            .with_context(|| format!("failed to read file: {}", path)),
+        None => Ok("42".to_string()),
+    }
+}
 
-    if args.verbose {
+fn run_parse(input: &str, format: &str, verbose: bool) -> Result<()> {
+    if verbose {
         eprintln!("{} parsing input...", "[info]".blue());
     }
 
-    let node = parse_input(&input)?;
+    let node = parse_input(input)?;
 
-    let formatter: Box<dyn OutputFormatter> = match args.format.as_str() {
+    let formatter: Box<dyn OutputFormatter> = match format {
         "json" => Box::new(JsonFormatter),
         _ => Box::new(TextFormatter),
     };
@@ -37,6 +34,33 @@ fn run(args: &Args) -> Result<()> {
         "text" => println!("{} {output}", "[result]".green()),
         _ => println!("{output}"),
     };
+
+    Ok(())
+}
+
+fn run_check(input: &str, verbose: bool) -> Result<()> {
+    if verbose {
+        eprintln!("{} checking input...", "[info]".blue());
+    }
+
+    parse_input(input)?;
+
+    if verbose {
+        eprintln!("{} input is valid", "[info]".blue());
+    }
+
+    Ok(())
+}
+
+fn run(args: &Args) -> Result<()> {
+    args.validate().context("argument validation failed")?;
+
+    let input = load_input(&args.input)?;
+
+    match args.command.as_ref().unwrap_or(&SubCommand::Parse) {
+        SubCommand::Parse => run_parse(&input, &args.format, args.verbose)?,
+        SubCommand::Check => run_check(&input, args.verbose)?,
+    }
 
     Ok(())
 }
