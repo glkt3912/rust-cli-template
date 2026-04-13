@@ -8,8 +8,9 @@ use rust_cli_template::parse_input;
 
 fn load_input(input: &Option<String>) -> Result<String> {
     match input {
-        Some(path) => std::fs::read_to_string(path)
-            .with_context(|| format!("failed to read file: {}", path)),
+        Some(path) => {
+            std::fs::read_to_string(path).with_context(|| format!("failed to read file: {}", path))
+        }
         None => Ok("42".to_string()),
     }
 }
